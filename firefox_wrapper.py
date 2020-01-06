@@ -14,6 +14,17 @@ from selenium.common import exceptions
 from selenium.webdriver.support.expected_conditions import presence_of_element_located
 from selenium.webdriver.support.ui import WebDriverWait
 
+BY_OPTIONS = [
+      "class name",
+      "css selector",
+      "id",
+      "link text",
+      "name",
+      "partial link text",
+      "tag name",
+      "xpath"
+      ]
+
 
 class FirefoxDriver(Firefox):
     """wrapper for selenium.webdriver.Firefox"""
@@ -41,7 +52,7 @@ class FirefoxDriver(Firefox):
         Parameters
         ----------
         value : str
-            Attribute value of element, can also be xpath
+            Attribute value of element
         by : str
             Attribute name
         high_priority : bool
@@ -53,6 +64,14 @@ class FirefoxDriver(Firefox):
         None, if no element was found and high_priority==False
         If more than one element was found, the first will be returned
         """
+        if by == "text":
+            value = "//*[contains(text(), '%s')]" % value
+            by = "xpath"
+        elif by not in BY_OPTIONS:
+            # search for attribute with by as attribute name and value as value
+            value = "//*[@%s='%s']" % (by, value)
+            by = "xpath"
+        
         elements = self.find_elements(by=by,value=value)
         if len(elements) == 0:
             if high_priority:
@@ -113,8 +132,8 @@ class FirefoxDriver(Firefox):
         search_form = self._find_element(value, by)
         if search_form == None:
             return False
-        search_form[0].clear()
-        search_form[0].send_keys(keys)
+        search_form.clear()
+        search_form.send_keys(keys)
         return True
     
     def select_dropdown(self, value, by, option_text):
@@ -160,8 +179,6 @@ class FirefoxDriver(Firefox):
         -------
         True, if element was found and clicked, else false
         """
-        if by == "xpath":
-            value = "//*[contains(text(), '%s')]" % value
         element = self._find_element(value, by, high_priority)
         if element == None:
             return False
@@ -180,3 +197,10 @@ class FirefoxDriver(Firefox):
         return True
 
 
+if __name__ == "__main__":
+    url = "https://www.wikipedia.org/"
+    driver = FirefoxDriver(False)
+    driver.get(url)
+    driver.select_dropdown("searchLanguage", "id", "English")
+    driver.fill_in_form("searchInput", "id", "Selenium")
+    driver.click_element("search-input-button", "data-jsl10n")
