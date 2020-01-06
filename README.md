@@ -8,4 +8,5 @@ Contains wrapper class for `selenium.webdriver.Firefox` including some helpful f
 * Python 3
 * Selenium
 * geckodriver
+
 Note: Versions of Selenium and geckodriver must match
